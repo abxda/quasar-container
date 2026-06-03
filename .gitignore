@@ -1,0 +1,8 @@
+# Basura de macOS / exFAT
+._*
+.DS_Store
+.AppleDouble
+# Artefactos de imagen (la imagen precompilada vive en Hugging Face, no en git)
+*.tar
+*.tar.gz
+*.sparseimage

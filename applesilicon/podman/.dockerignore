@@ -1,0 +1,6 @@
+**/*.box
+**/builds
+**/*.tar.gz
+**/.vagrant
+**/.ipynb_checkpoints
+**/__pycache__

@@ -1,0 +1,51 @@
+# =============================================================================
+# Quasar Big Data Lab — MULTI-ARCH (arm64 + amd64) · Podman / Docker
+# =============================================================================
+#   podman compose build        # construye la imagen para TU arquitectura (~10-15 min)
+#   podman compose up -d        # arranca el laboratorio
+#   podman compose logs -f      # ver arranque / Jupyter ("STACK INICIADO")
+#   podman exec -it quasar quasar-check.sh   # estado de servicios
+#   podman compose down         # detener (datos HDFS/Kafka efímeros)
+#
+# Requisito previo (Mac): una 'podman machine' con >= 8 GB de RAM. Ver PODMAN.md.
+# Funciona igual con Docker: sustituye `podman` por `docker`.
+#
+# USAR LA IMAGEN YA PUBLICADA (sin compilar): comenta el bloque `build:` y
+# descomenta la línea `image:` apuntando a tu registro. Ver PUBLICAR-IMAGEN.md.
+# =============================================================================
+services:
+  quasar:
+    # --- Opción A: construir localmente (por defecto) ---
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # --- Opción B: usar la imagen multi-arch ya publicada (descomenta y ajusta) ---
+    # image: ghcr.io/abxda/quasar-bigdata:1.0
+    image: quasar-bigdata:local
+    container_name: quasar
+    # SIN 'platform' fijo: Podman/Docker eligen automáticamente la arquitectura
+    # del host (arm64 en Mac Apple Silicon, amd64 en Windows/Linux Intel).
+    ports:
+      - "8888:8888"              # JupyterLab
+      - "9870:9870"              # HDFS NameNode UI
+      - "9000:9000"              # HDFS RPC
+      - "9200:9200"              # Elasticsearch
+      - "9092:9092"              # Kafka broker
+    volumes:
+      # Notebooks del host <-> /home/quasar/work del contenedor.
+      # Si al escribir en /home/quasar/work ves "Permission denied", la VM Fedora
+      # CoreOS de podman machine usa SELinux: cambia la línea de abajo por UNA
+      # de estas (NO ambas):
+      #   - ../notebooks:/home/quasar/work:Z   # relabel SELinux para este contenedor
+      #   - ../notebooks:/home/quasar/work:U   # ademas ajusta UID/GID al user del contenedor
+      - ../notebooks:/home/quasar/work
+    ulimits:
+      # nofile: rootless Podman lo respeta mientras no exceda el hard limit del
+      # usuario dentro de la podman machine (por defecto alcanza de sobra).
+      nofile:
+        soft: 65536
+        hard: 65536
+      # NOTA: NO se usa 'memlock: -1'. memlock ILIMITADO no es posible en rootless
+      # Podman y aquí no hace falta: Elasticsearch corre en discovery.type
+      # single-node (bootstrap checks = warnings) y bootstrap.memory_lock está en
+      # false (ver scripts/install-stack.sh). No reactives el ulimit.
