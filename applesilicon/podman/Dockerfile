@@ -79,6 +79,18 @@ RUN su - quasar -c "mkdir -p ~/.ssh && chmod 700 ~/.ssh && \
         cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys && \
         chmod 600 ~/.ssh/authorized_keys"
 
+# --- Fix Kafka KRaft (broker único) ---
+# En un solo broker, los topics internos de Kafka (__consumer_offsets y los de
+# estado de transacciones) usan por defecto factor de replicación 3, imposible
+# de satisfacer con un nodo: el coordinador de grupo nunca queda listo y todo
+# consumo por grupo (p.ej. kafka-console-consumer, clientes con group.id) se
+# CUELGA con TimeoutException. Forzamos RF=1 e ISR=1 para single-node. Se hace
+# como paso propio (no en install-stack.sh) para preservar el caché de la capa
+# de descarga del stack; el resultado en runtime es idéntico: estas 3 líneas
+# quedan en el server.properties de KRaft que arranca el contenedor.
+RUN printf 'offsets.topic.replication.factor=1\ntransaction.state.log.replication.factor=1\ntransaction.state.log.min.isr=1\n' \
+        >> /opt/bdpv5/kafka/config/kraft/server.properties
+
 # Puertos: JupyterLab, HDFS NameNode UI, HDFS RPC, Elasticsearch, Kafka
 EXPOSE 8888 9870 9000 9200 9092
 
