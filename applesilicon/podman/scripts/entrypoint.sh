@@ -10,12 +10,12 @@ chown -R quasar:quasar /home/quasar/work 2>/dev/null || true
 
 echo ""
 echo "================================================================"
-echo "  Quasar Big Data Lab (Apple Silicon / arm64) LISTO"
+echo "  Quasar Big Data Lab (linux/$(uname -m)) LISTO"
 echo "  JupyterLab : http://localhost:8888   (sin token)"
 echo "  HDFS UI    : http://localhost:9870"
 echo "  Elastic    : http://localhost:9200"
 echo "  Kafka      : localhost:9092"
-echo "  Estado     : docker exec quasar quasar-check.sh"
+echo "  Estado     : podman exec quasar quasar-check.sh"
 echo "================================================================"
 echo ""
 

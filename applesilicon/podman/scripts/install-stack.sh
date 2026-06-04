@@ -81,6 +81,12 @@ advertised.listeners=PLAINTEXT://localhost:9092
 controller.listener.names=CONTROLLER
 listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
 log.dirs=/opt/bdpv5/data/kafka_kraft
+# Broker único (KRaft): los topics internos deben tener RF=1, si no, el
+# coordinador de grupos no arranca y el consumo POR GRUPO se cuelga
+# (__consumer_offsets intentaría RF=3 sin réplicas disponibles).
+offsets.topic.replication.factor=1
+transaction.state.log.replication.factor=1
+transaction.state.log.min.isr=1
 EOF
 
 ES_CONFIG="${INSTALL_DIR}/elasticsearch/config/elasticsearch.yml"
